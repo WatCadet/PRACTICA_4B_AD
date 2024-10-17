@@ -10,14 +10,24 @@ format:
 Rendering:
     embed-resources: true
 ---
+**Dídac Capó Peña**:
+
+[Ver en GitHub](https://github.com/WatCadet/PRACTICA_5_AD)
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
+```{r, echo=FALSE}
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(EnvStats)
+library(rrcov)
+library(Hotelling)
+```
 
-
-# Problema 1
+## Problema 1
 
 Supongamos que un analista financiero quiere estudiar la relación entre tres tipos de activos financieros: el precio de una acción $X_1$, la tasa de interés de un bono $X_2$, y el precio de una materia prima $X_3$. Se asume que el vector $\mathbf{X} = (X_1, X_2, X_3)^t$ sigue una distribución normal multivariante con media 
 $\mu = (-1, 1, 0)^t$  y matriz de covarianzas
@@ -35,11 +45,51 @@ $$
 
 #### Respuesta
 
+Sabemos que $X_1\sim N(-1,1), X_2\sim N(1,3)$ y $X_3 \sim N(0,2)$, ya que en la diagonal de la matriz $\Sigma$ tenemos las varianzas de las respectivas variables y en el vector de medias tenemos sus medias. 
+
+Ahora sabemos que $Var(Y) = a^T \Sigma a$, donde $a = (1,2,3)^T$. Entonces: 
+
+```{r}
+Sigma <- matrix(c(1, 0, 1, 
+                   0, 3, 1, 
+                   1, 1, 2), 
+                 nrow = 3, ncol = 3, byrow = TRUE)
+a <- c(1,2,-3)
+
+Var_Y = a %*% Sigma %*% a
+Var_Y
+```
+Por lo tanto, $Var(Y) = 13$
+Además, $$E(Y) = E(X_1 + 2X_2 - 3X_3) = E(X_1) + 2E(X_2) - 3E(X_3) = 1$$ ya que el valor esperado de una normal es su media $\mu_i$.
+
+Entonces: 
+
+$$Y \sim N(1, 13)$$
+
 
 
 (b) El analista desea encontrar una estrategia que elimine  la correlación entre el precio de la acción $X_1$ y una combinación lineal de la tasa de interés $X_2$ y el precio de la materia prima $X_3$. Encuentra un vector $a_{(2\times 1)}$, tal que las variables $X_1$ y $X_1 - a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix}$ sean independientes.
 
 #### Respuesta
+
+El objetivo es encontrar un vector $a \in \mathbb{R}^2$ tal que las variables $X_1$ y $X_1 - a^T\begin{pmatrix} X_2 \\ X_3 \end{pmatrix}$ sean independientes. Para esto, necesitamos que la covarianza entre estas dos variables sea cero, esto aplica en este caso porque las variables $X_i$ son normales (en general $Cov(M,N)=0$ no implica que $M,N$ sean independientes), es decir, buscamos que:
+
+$$\text{Cov} \left( X_1, X_1 - a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) = 0$$
+
+Expandiendo la covarianza, obtenemos:
+
+$$\text{Cov} \left( X_1, X_1 - a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) = \text{Cov}(X_1, X_1) - \text{Cov} \left( X_1, a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right)$$
+
+
+Sabemos que $\text{Cov}(X_1, X_1) = \text{Var}(X_1) = 1$, y la covarianza de $X_1$ con una combinación lineal de $X_2$ y $X_3$ es:
+
+$$\text{Cov} \left( X_1, a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) = a^t \begin{pmatrix} \text{Cov}(X_1, X_2) \\ \text{Cov}(X_1, X_3) \end{pmatrix}$$
+
+Por lo tanto, la condición anterior es:
+
+$$1 - a^t \begin{pmatrix}  0\\ 1 \end{pmatrix} = 0$$
+
+De aquí, obtenemos que $a_2 = 1$ y $a_1$ cualquiera. Entonces $a^T=(a_1,1)$
 
 
 
@@ -67,10 +117,43 @@ de una población $\mathcal{N}_3(\mu, \Sigma)$ con $\mu$ y $\Sigma$ desconocidos
 
 (a) Calcula el estimador de máxima verosimilitud de $\mu$
 
+#### Respuesta
+
+El estimador de máxima verosimilitud de $\mu$ es la media muestral:
+$$
+\hat{\mu} = \frac{1}{4} \begin{pmatrix}
+2 + (-4) + (-2) + (-7) \\
+6 + 8 + 9 + 8 \\
+-3 + 7 + 7 + 2
+\end{pmatrix}
+=
+\begin{pmatrix}
+-2.75 \\
+7.75 \\
+3.25
+\end{pmatrix}
+$$
 (b) Calcula un estimador insesgado de $\Sigma$
 
+#### Respuesta
 
-### Problema 3
+El estimador insesgado de la matriz de covarianza $\Sigma$ es:
+
+$$\hat{\Sigma} = \frac{1}{n} \tilde{X}^T\tilde{X}$$ 
+donde $\tilde{X}$ es la matriz centrada. La operación de `R` que lo calcula es `cov(X)`
+
+
+```{r}
+X <- matrix(c(2,6,-3,
+              -4, 8, 7,
+              -2, 9, 7,
+              -7, 8, 2), 
+                 nrow = 4, ncol = 3, byrow = TRUE)
+cov(X)
+```
+
+
+## Problema 3
 
 En una investigación sobre la satisfacción de los clientes de una cadena de tiendas de tecnología, se ha recogido una muestra aleatoria de datos de 100 clientes en relación con tres variables:
 
@@ -82,8 +165,31 @@ El equipo de análisis de datos ha recopilado información de los clientes y bus
 
 #### Respuesta
 
+Leemos el `csv`
+```{r}
+X<-read_csv("clientes.csv")
+X
+```
+La idea básica es que para datos que provienen de una distribución normal multivariante, las distancias de Mahalanobis seguirán una distribución chi-cuadrado.
 
-### Problema 5
+Calculamos la media y la matriz de covarianza que necesitaremos para la distancia de Mahalanobis
+```{r}
+media_X <- colMeans(X)
+cov_X <- cov(X)
+```
+
+Calculamos la distancia de Mahalanobis al quadrado para cada observación
+```{r}
+dist_mahalanobis <- mahalanobis(X, center = media_X, cov = cov_X)
+```
+
+Realizamos una prueba de bondad de ajuste comparando con una distribución Chi-cuadrado. Tenemos que poner tantos grados de libertad como número de variables (3 en este caso)
+```{r}
+ks.test(dist_mahalanobis, "pchisq", df = 3)
+```
+Como el p-valor es alto implica que puedemos aceptar la hipótesis nula y, por tanto, considerar que no hay evidencia suficiente para afirmar que los datos no son normalmente distribuidos. Es decir, podemos considerar que los datos vienen de una distribución normal multivariante
+
+## Problema 4
 
 Una distribución muy relacionada con la ley normal multivariante, y que es el análogo multivariante de la ley $\chi^2$, es la distribución Wishart. Dados $X_1, \dots, X_n$, vectores aleatorios i.i.d. $X_i \sim \mathcal{N}_p(0, \Sigma)$, la matriz $p \times p$
 
@@ -109,7 +215,44 @@ Para $p$ y $n$ fijos, genera una muestra de una ley $T^2(p, n)$ de Hotelling. Re
 
 #### Respuesta
 
-### Problema 6
+Para generar muestras de la distribución $T^2(p, n)$ usaremos la relación entre la distribución de Hotelling y la distribución de Fisher
+
+$$
+\frac{n - p + 1}{np} T^2(p, n) = F(p, n - p + 1).
+$$
+
+Cojemos $p=4$ $n=12$
+```{r}
+p <- 4  
+n <- 12
+```
+
+Generamos una muestra de tamaño $100$ de la distribución $T^2(4, 12)$ usando la relación con la F de Fisher
+
+```{r}
+set.seed(123)  
+muestra_T2 <- (n - p + 1) / p * rf(100, p, n - p + 1)
+```
+
+Creamos un histograma de la muestra generada
+```{r}
+
+hist(muestra_T2, breaks = 30, main = expression(paste("Muestra de ", T^2, "(p, n) de Hotelling")),
+     xlab = expression(T^2), col = "lightblue", border = "black")
+
+```
+Generamos una muestra de la distribución T^2(4, 12) usando rHotelling()
+```{r}
+#muestra_Hotelling <- rHotelling(100, p = p, n = n)
+```
+
+Creamos el histograma para comparar con la muestra generada manualmente
+```{r}
+#hist(muestra_Hotelling, breaks = 30, main = expression(paste("Muestra usando rHotelling()")),
+     #xlab = expression(T^2), col = "lightgreen", border = "black")
+```
+
+## Problema 5
 
 Si $A \sim W_p(\Sigma, a)$ y $B \sim W_p(\Sigma, b)$ son independientes, $\Sigma$ es regular y $a \geq p$, la variable aleatoria
 
@@ -128,3 +271,55 @@ $$
 Genera una muestra de una ley $\Lambda$ de Wilks. Representa los resultados mediante un histograma. Luego, investiga la función `rWilksLambda` del paquete `EnvStats` y compara los resultados obtenidos con los de la simulación.
 
 #### Respuesta
+
+Función para generar una muestra de Lambda de Wilks basada en productos de Betas
+```{r}
+simula_wilks_lambda <- function(p, a, b, n) {
+  lambdas <- numeric(n)
+  
+  for (j in 1:n) {
+    
+    betas <- sapply(1:p, function(i) {
+      rbeta(1, (a + i - 1) / 2, (b + i - 1) / 2)
+    })
+    
+    lambdas[j] <- prod(betas)
+  }
+  
+  return(lambdas)
+}
+```
+
+Cojeremos los siguientes parametros:
+```{r}
+p <- 3   
+a <- 5   
+b <- 7   
+n <- 100
+```
+
+Generamos las muestras simuladas
+```{r}
+set.seed(123)  
+lambdas_sim <- simula_wilks_lambda(p, a, b, n)
+```
+
+Histograma de las muestras simuladas:
+```{r}
+hist(lambdas_sim, probability = TRUE, main = "Simulación de Lambda de Wilks",
+     xlab = expression(Lambda), col = "lightblue", border = "black")
+```
+
+Con rWilksLambda del paquete EnvStats
+```{r}
+#lambdas_envstats <- rWilksLambda(n, p, a, b)
+```
+
+Histograma para rWilksLambda
+```{r}
+#hist(lambdas_envstats, probability = TRUE, add = TRUE, col = rgb(1,0,0,0.5))
+# Agregar leyenda
+#legend("topright", legend = c("Simulación", "rWilksLambda"),
+       #fill = c("lightblue", rgb(1,0,0,0.5)))
+```
+
