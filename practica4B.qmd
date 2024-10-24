@@ -78,16 +78,17 @@ $$\text{Cov} \left( X_1, X_1 - a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \rig
 
 Expandiendo la covarianza, obtenemos:
 
-$$\text{Cov} \left( X_1, X_1 - a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) = \text{Cov}(X_1, X_1) - \text{Cov} \left( X_1, a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right)$$
+$$\text{Cov} \left( X_1, X_1 - a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) = \text{Cov}(X_1, X_1) - \text{Cov} \left( X_1, a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) $$
+$$= \text{Var}(X_1) - \text{Cov} \left( X_1, a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right)$$
 
 
-Sabemos que $\text{Cov}(X_1, X_1) = \text{Var}(X_1) = 1$, y la covarianza de $X_1$ con una combinación lineal de $X_2$ y $X_3$ es:
+Sabemos que $\text{Var}(X_1) = 1$, y la covarianza de $X_1$ con una combinación lineal de $X_2$ y $X_3$ es:
 
-$$\text{Cov} \left( X_1, a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) = a^t \begin{pmatrix} \text{Cov}(X_1, X_2) \\ \text{Cov}(X_1, X_3) \end{pmatrix}$$
+$$\text{Cov} \left( X_1, a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) = \text{Cov}(X_1,a_1X_2 + a_2X_3) $$
+$$= a_1\text{Cov}(X_1,X_2) + a_2\text{Cov}(X_1,X_3) = a_2 $$
+Esto se debe a que $\text{Cov}(X_1,X_2)=0$ y que $\text{Cov}(X_1,X_3)=1$ como se puede leer de la matriz de covarianza.
 
-Por lo tanto, la condición anterior es:
-
-$$1 - a^t \begin{pmatrix}  0\\ 1 \end{pmatrix} = 0$$
+Por tanto, $$\text{Cov} \left( X_1, X_1 - a^t \begin{pmatrix} X_2 \\ X_3 \end{pmatrix} \right) =1-a_2$$
 
 De aquí, obtenemos que $a_2 = 1$ y $a_1$ cualquiera. Entonces $a^T=(a_1,1)$
 
@@ -187,7 +188,7 @@ Realizamos una prueba de bondad de ajuste comparando con una distribución Chi-c
 ```{r}
 ks.test(dist_mahalanobis, "pchisq", df = 3)
 ```
-Como el p-valor es alto implica que pOdemos aceptar la hipótesis nula y, por tanto, considerar que no hay evidencia suficiente para afirmar que los datos no son normalmente distribuidos. Es decir, podemos considerar que los datos vienen de una distribución normal multivariante
+Como el p-valor es alto, podemos aceptar la hipótesis nula y, por tanto considerar que las distancias distribuyen $\chi^2_3$. Es decir, podemos considerar que los datos vienen de una distribución normal multivariante.
 
 ## Problema 4
 
@@ -231,7 +232,7 @@ Generamos una muestra de tamaño $100$ de la distribución $T^2(4, 12)$ usando l
 
 ```{r}
 set.seed(123)  
-muestra_T2 <- (n - p + 1) / p * rf(100, p, n - p + 1)
+muestra_T2 <- ((n - p + 1) / (n*p)) * rf(100, p, n - p + 1)
 ```
 
 Creamos un histograma de la muestra generada
@@ -280,7 +281,7 @@ simula_wilks_lambda <- function(p, a, b, n) {
   for (j in 1:n) {
     
     betas <- sapply(1:p, function(i) {
-      rbeta(1, (a + i - 1) / 2, (b + i - 1) / 2)
+      rbeta(1, (a + i - p) / 2, (b) / 2)
     })
     
     lambdas[j] <- prod(betas)
